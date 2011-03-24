@@ -6,7 +6,7 @@ class FlexiRoute_Controller extends BlueBox_Controller
 	{
 		if (!array_key_exists("submitdata",$_REQUEST)) {
 		} elseif ($_REQUEST["submitdata"]=="") {
-			message::set("No changes detected", 'success');
+			message::set("No changes detected", 'alert');
 		} else {
 			$updates=0;
 			if (get_magic_quotes_gpc()) {
@@ -32,17 +32,19 @@ class FlexiRoute_Controller extends BlueBox_Controller
 					$dbrec->save();
 					$updates++;
 				} elseif ($record->_state=="deleted") {
-					$dbrec=Doctrine::getTable("FlexiRoute")->find($record->flexiroute_id);
+					$dbrec=Doctrine::getTable("FlexiRoute")->find($record->flexiroute_id)->delete();
 					$updates++;
 				} elseif ($record->_newpriority != $record->priority) {
-					$dbrec=Doctrine::getTable("FlexiRoute")->find($record->flexiroute_id)->delete();
+					$dbrec=Doctrine::getTable("FlexiRoute")->find($record->flexiroute_id);
+					$dbrec->priority=$record->_newpriority;
+					$dbrec->save();
 					$updates++;
 				}
 			}
 			if ($updates>0) {
 				message::set("Changes saved", 'success');
 			} else {
-				message::set("No changes detected", 'success');
+				message::set("No changes detected", 'alert');
 			}
 		}
 

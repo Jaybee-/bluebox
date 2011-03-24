@@ -14,7 +14,7 @@ class FlexiRoute extends Bluebox_Record
 		$this->hasColumn('context_id','integer',11,
 			array('notnull'=>TRUE,'unsigned'=>TRUE));
 		$this->hasColumn('priority','integer',11,
-			array('notnull'=>TRUE,'unsigned'=>TRUE,'unique'=>TRUE));
+			array('notnull'=>TRUE,'unsigned'=>TRUE)); // UNIQUE, except while making changes (e.g. swapping)
 	}
 	public function setUp()
 	{
