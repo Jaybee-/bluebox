@@ -1,3 +1,12 @@
+<div id="flexiroute_header" class="update flexiroute module_header">
+
+    <h2>FlexiRoute</h2>
+
+</div>
+
+<div id="simpleroutes_update_form" class="update simpleroute">
+
+
 <style>
 .selected {
         color:blue;
@@ -9,24 +18,20 @@ td, th{
 td.noborder {
 	border: 0px;
 }
-table.dummy {
-        border: 1px solid black;
-        border-collapse: collapse;
-}
 </style>
 <table width="100%" border=0><tr>
 <td class=noborder valign=top>
 <table id="list" class=list>
-<tr><th>Prefix</th><th>Context</th><th>Route</th><th>Trunk</th></tr>
+<tr><th>Context</th><th>Route</th><th>Trunk</th><th>Dialstring</th></tr>
 <?php foreach ($froutes AS $routeid=>$route){ echo new View('flexiroute/route.mus',$route); } ?>
 </table>
 </td>
 <td class=noborder width="50%" valign="top">
 	<table>
-		<tr><td>Prefix</td><td><input id=prefixselect name=prefix></td></tr>
 		<tr><td>Context</td><td><select id=contextselect name="context"><option></option><?php echo $contextoptions?></select></td></tr>
 		<tr><td>Trunk</td><td><select id=trunkselect name="trunk"><option></option><?php echo $trunkoptions?></select></td></tr>
 		<tr><td>Route</td><td><select id=routeselect name="route"><option></option><?php echo $routeoptions?></select></td></tr>
+		<tr><td>Dialstring</td><td><input id=dialstringselect name=dialstring value='$1'></td></tr>
 		<tr><td colspan=2>
 		<a href=# onclick="addentry();">Add</a> 
 		<a href=# onclick="clearform();">Clear</a> 
@@ -38,6 +43,11 @@ table.dummy {
 	</table>
 </td>
 </tr></table>
+    <?php echo form::open(); ?>
+<input type=hidden id="submitdata" name=submitdata value="">
+    <?php echo form::close(TRUE); ?>
+
+
 <script>
 document.onmouseup = mouseUp; 
 var dragobject = null;
@@ -48,6 +58,16 @@ var moved = 0;
 var routeinfo = <?php print json_encode($routes_hash); ?>;
 var editing = null;
 
+function update_submit() {
+	var list=document.getElementById("list").rows;
+	for (var index=1; index<list.length; index++) {
+		if (routeinfo[list[index].id.substr(6)].priority!=index-1) {
+			routeinfo[list[index].id.substr(6)]._newpriority=index-1;
+		}
+	}
+	document.getElementById("submitdata").value=JSON.stringify(routeinfo);
+}
+
 function selectline(line) {
 	if (moved==1) { // ignore clicks if they are drags
 		move=0;
@@ -55,7 +75,7 @@ function selectline(line) {
 	}
 	lineid=line.id.substr(6);
 	document.getElementById('contextselect').selectedIndex=0;
-	document.getElementById('prefixselect').value=routeinfo[lineid].prefix;
+	document.getElementById('dialstringselect').value=routeinfo[lineid].dialstring;
 	setdropdown("trunkselect",routeinfo[lineid].trunk_id);
 	setdropdown("routeselect",routeinfo[lineid].simple_route_id);
 	setdropdown("contextselect",routeinfo[lineid].context_id);
@@ -79,7 +99,7 @@ function clearform() {
 	document.getElementById('routeselect').selectedIndex=0;
 	document.getElementById('contextselect').selectedIndex=0;
 	document.getElementById('trunkselect').selectedIndex=0;
-	document.getElementById('prefixselect').value="";
+	document.getElementById('dialstringselect').value='$1';
 	document.getElementById('selected_route').style.display="none";
 	if (editing!=null) {
 		editing.className=oldclass;
@@ -90,24 +110,24 @@ function clearform() {
 
 function erase() {
 	if (routeinfo[editing.id.substr(6)]._state=="new") {
-		routeinfo[editing.id.substr(6)]._state="canceled";
+		delete routeinfo[editing.id.substr(6)];
 	} else {
 		routeinfo[editing.id.substr(6)]._state="deleted";
 	}
 	editing.parentNode.deleteRow(editing.rowIndex);
+	update_submit();
 	
 	clearform();
 }
 
 // This function has a lot in common with addentry - perhaps merge?
 function update() {
-	var prefix=document.getElementById("prefixselect").value;
+	var dialstring=document.getElementById("dialstringselect").value;
 	var contextselect=seloption("contextselect");
 	var routeselect=seloption("routeselect");
 	var trunkselect=seloption("trunkselect");
 	for (var loop in routeinfo) {
 		if ( (routeinfo[loop]["trunk_id"]==trunkselect.value) && (routeinfo[loop]["simple_route_id"]==routeselect.value) && (routeinfo[loop]["context_id"]==contextselect.value) && (loop!=editing.id.substr(6))) {
-//			alert("cmp " + editing.id.substr(6) + " vs. " + loop);
 			alert("There is already a flexiroute with that context, route, and trunk.");
 			return false;
 		}
@@ -116,18 +136,18 @@ function update() {
 		routeinfo[editing.id.substr(6)]._state="modified";
 	}
 	
-	routeinfo[editing.id.substr(6)].flexiroute_id=nextid;
-	routeinfo[editing.id.substr(6)].prefix=prefix;
+	routeinfo[editing.id.substr(6)].dialstring=dialstring;
 	routeinfo[editing.id.substr(6)].trunk_id=trunkselect.value;
 	routeinfo[editing.id.substr(6)]._TrunkName=trunkselect.text;
 	routeinfo[editing.id.substr(6)].simple_route_id=routeselect.value;
 	routeinfo[editing.id.substr(6)]._RouteName=routeselect.text;
 	routeinfo[editing.id.substr(6)].context_id=contextselect.value;
 	routeinfo[editing.id.substr(6)]._ContextName=contextselect.text;
-	editing.cells[0].innerHTML=prefix;
-	editing.cells[1].innerHTML=contextselect.text;
-	editing.cells[2].innerHTML=routeselect.text;
-	editing.cells[3].innerHTML=trunkselect.text;
+	editing.cells[0].innerHTML=contextselect.text;
+	editing.cells[1].innerHTML=routeselect.text;
+	editing.cells[2].innerHTML=trunkselect.text;
+	editing.cells[3].innerHTML=dialstring;
+	update_submit();
 	clearform();
 }
 
@@ -137,7 +157,7 @@ function addentry() {
 		return false;
 	}
 
-	var prefix=document.getElementById("prefixselect").value;
+	var dialstring=document.getElementById("dialstringselect").value;
 	var contextselect=seloption("contextselect");
 	var routeselect=seloption("routeselect");
 	var trunkselect=seloption("trunkselect");
@@ -150,7 +170,7 @@ function addentry() {
 	var newrouteinfo=new Array();
 	routeinfo[nextid]=new Object();
 	routeinfo[nextid].flexiroute_id=nextid;
-	routeinfo[nextid].prefix=prefix;
+	routeinfo[nextid].dialstring=dialstring;
 	routeinfo[nextid].trunk_id=trunkselect.value;
 	routeinfo[nextid]._TrunkName=trunkselect.text;
 	routeinfo[nextid].simple_route_id=routeselect.value;
@@ -165,14 +185,15 @@ function addentry() {
 	row.onmousemove=function () {mouseMove(row); }
 	row.onmousedown=function () {mouseDown(row); return false;}
 	row.id="route_"+nextid;
-	appendtd(row,prefix);
 	appendtd(row,contextselect.text);
 	appendtd(row,routeselect.text);
 	appendtd(row,trunkselect.text);
+	appendtd(row,dialstring);
 	list.appendChild(row);
 
 	nextid++;
 
+	update_submit();
 	clearform();
 	return false;
 }
@@ -215,6 +236,9 @@ function mouseMove(sender){
         if (sender==dragobject) {
                 return;
         }
+	if (dragobject==null) {
+		return;
+	}
 	moved=1;
         if ((sender!=dragobject) && (dragobject!=null)) {
                 if (dragobject.rowIndex > sender.rowIndex) {
@@ -224,6 +248,7 @@ function mouseMove(sender){
                         sender.parentNode.insertBefore(sender,dragobject);
                 }
         }
+	update_submit();
 }
 </script>
 

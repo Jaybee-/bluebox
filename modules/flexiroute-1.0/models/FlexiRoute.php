@@ -6,7 +6,7 @@ class FlexiRoute extends Bluebox_Record
 		$this->hasColumn('flexiroute_id','integer',11, 
 			array('unsigned' => true, 'notnull' => true, 
 			'primary' => true, 'autoincrement' => true));
-		$this->hasColumn('prefix','string',32);
+		$this->hasColumn('dialstring','string',32);
 		$this->hasColumn('trunk_id','integer',11,
 			array('notnull'=>TRUE,'unsigned'=>TRUE));
 		$this->hasColumn('simple_route_id','integer',11,

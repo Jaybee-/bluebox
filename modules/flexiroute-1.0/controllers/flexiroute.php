@@ -4,6 +4,48 @@ class FlexiRoute_Controller extends BlueBox_Controller
 {
 	public function index()
 	{
+		if (!array_key_exists("submitdata",$_REQUEST)) {
+		} elseif ($_REQUEST["submitdata"]=="") {
+			message::set("No changes detected", 'success');
+		} else {
+			$updates=0;
+			if (get_magic_quotes_gpc()) {
+				$_REQUEST["submitdata"]=stripcslashes($_REQUEST["submitdata"]); 
+			}
+			foreach (json_decode(str_replace('\"','"',$_REQUEST["submitdata"])) AS $record) {
+				if ($record->_state=="modified") {
+					$dbrec=Doctrine::getTable("FlexiRoute")->find($record->flexiroute_id);
+					$dbrec->dialstring=$record->dialstring;
+					$dbrec->trunk_id=$record->trunk_id;
+					$dbrec->simple_route_id=$record->simple_route_id;
+					$dbrec->context_id=$record->context_id;
+					$dbrec->priority=$record->_newpriority;
+					$dbrec->save();
+					$updates++;
+				} elseif ($record->_state=="new") {
+					$dbrec=new FlexiRoute;
+					$dbrec->dialstring=$record->dialstring;
+					$dbrec->trunk_id=$record->trunk_id;
+					$dbrec->simple_route_id=$record->simple_route_id;
+					$dbrec->context_id=$record->context_id;
+					$dbrec->priority=$record->_newpriority;
+					$dbrec->save();
+					$updates++;
+				} elseif ($record->_state=="deleted") {
+					$dbrec=Doctrine::getTable("FlexiRoute")->find($record->flexiroute_id);
+					$updates++;
+				} elseif ($record->_newpriority != $record->priority) {
+					$dbrec=Doctrine::getTable("FlexiRoute")->find($record->flexiroute_id)->delete();
+					$updates++;
+				}
+			}
+			if ($updates>0) {
+				message::set("Changes saved", 'success');
+			} else {
+				message::set("No changes detected", 'success');
+			}
+		}
+
 		$this->view->froutes=array();
 		$this->view->routes_hash=array();
 		$this->view->nextid=0;
@@ -14,7 +56,7 @@ class FlexiRoute_Controller extends BlueBox_Controller
 			*/
 			$arr=array(
 				"flexiroute_id"=>$froute->flexiroute_id,
-				"prefix"=>$froute->prefix,
+				"dialstring"=>$froute->dialstring,
 				"trunk_id"=>$froute->trunk_id,
 				"_TrunkName"=>$froute->Trunk->name,
 				"simple_route_id"=>$froute->simple_route_id,
@@ -22,6 +64,7 @@ class FlexiRoute_Controller extends BlueBox_Controller
 				"context_id"=>$froute->context_id,
 				"_ContextName"=>$froute->Context->name,
 				"priority"=>$froute->priority,
+				"_newpriority"=>$froute->priority,
 				"_state"=>"unmodified",
 			);
 			array_push($this->view->froutes,$arr);
