@@ -2,6 +2,9 @@
 
 class FlexiRoute_Controller extends BlueBox_Controller
 {
+	static function _sortcallback($a, $b) {
+		return ($a["priority"] < $b["priority"]) ? -1 : 1;
+	}
 	public function index()
 	{
 		if (!array_key_exists("submitdata",$_REQUEST)) {
@@ -76,9 +79,7 @@ class FlexiRoute_Controller extends BlueBox_Controller
 				$this->view->nextid=$froute->flexiroute_id+1;
 			}
 		}
-		usort($this->view->froutes,
-			function($a, $b) { return ($a["priority"] < $b["priority"]) ? -1 : 1;}
-		);
+		usort($this->view->froutes,array("FlexiRoute_Controller","_sortcallback"));
 
 		$this->view->contexts=array();
 		$this->view->contextoptions="";
