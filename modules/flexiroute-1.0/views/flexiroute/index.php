@@ -10,10 +10,14 @@
 <style>
 .selected {
         color:blue;
+	cursor: move;
 }
 td, th{
         border: 1px solid black;
         padding: 5px;
+}
+.dragme {
+	cursor: move;
 }
 td.noborder {
 	border: 0px;
@@ -22,7 +26,7 @@ td.noborder {
 <table width="100%" border=0><tr>
 <td class=noborder valign=top>
 <table id="list" class=list>
-<tr><th>Context</th><th>Route</th><th>Trunk</th><th>Dialstring</th></tr>
+<tr><th>Context</th><th>Destination</th><th>Trunk</th><th>Dialstring</th></tr>
 <?php foreach ($froutes AS $routeid=>$route){ echo new View('flexiroute/route.mus',$route); } ?>
 </table>
 </td>
@@ -30,7 +34,7 @@ td.noborder {
 	<table>
 		<tr><td>Context</td><td><select id=contextselect name="context"><option></option><?php echo $contextoptions?></select></td></tr>
 		<tr><td>Trunk</td><td><select id=trunkselect name="trunk"><option></option><?php echo $trunkoptions?></select></td></tr>
-		<tr><td>Route</td><td><select id=routeselect name="route"><option></option><?php echo $routeoptions?></select></td></tr>
+		<tr><td>Destination</td><td><select id=routeselect name="route"><option></option><?php echo $routeoptions?></select></td></tr>
 		<tr><td>Dialstring</td><td><input id=dialstringselect name=dialstring value='$1'></td></tr>
 		<tr><td colspan=2>
 		<a href=# onclick="addentry();">Add</a> 
