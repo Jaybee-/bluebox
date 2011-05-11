@@ -12,7 +12,7 @@ class simplerouter
 
        if (empty($simpleRoute['patterns']))
        {
-           return FALSE;
+           return array();
        }
 
         // get the outbound patterns out of the record
