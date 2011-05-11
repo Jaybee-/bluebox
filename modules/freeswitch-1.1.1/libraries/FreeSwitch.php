@@ -601,6 +601,11 @@ class FreeSwitch extends Telephony_Driver
 
         if ($elements->length == 0)
         {
+            if (in_array("existing",$options)) 
+            {
+                return FALSE;
+            }
+
             $sections = self::getDialplanSections();
 
             // This is a new extension we are creating - search for where to put it by finding the last item above it
