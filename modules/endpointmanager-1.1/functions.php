@@ -48,7 +48,7 @@ class endpointman {
 
     function prepare_phone_info($device)
     {
-        if((!isset($device['plugins']['endpointdevice']['mac_address'])) || ($device['plugins']['endpointdevice']['mac_address'] != "")) {
+        if((!isset($device['plugins']['endpointdevice']['mac_address'])) || ($device['plugins']['endpointdevice']['mac_address'] == "")) {
 	    return;
 	}
         if(!$this->mac_check_clean($device['plugins']['endpointdevice']['mac_address'])) {
