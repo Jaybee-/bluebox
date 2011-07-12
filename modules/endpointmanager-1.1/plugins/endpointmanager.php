@@ -12,7 +12,8 @@ class EndpointManager_Plugin extends Bluebox_Plugin
         parent::addPluginData();
 
         include_once(MODPATH . 'endpointmanager-1.1' . DIRECTORY_SEPARATOR . "functions.php");
-        $phone_info = prepare_phone_info($this->base);
+	$endpoint=new endpointman();
+        $phone_info = $endpointman->prepare_phone_info($this->base);
 	if ($phone_info!==false) {
                 $endpoint->prepare_configs($phone_info);
         	return true;

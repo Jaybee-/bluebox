@@ -51,8 +51,7 @@ class endpointman {
         if((!isset($device['plugins']['endpointdevice']['mac_address'])) || ($device['plugins']['endpointdevice']['mac_address'] != "")) {
 	    return;
 	}
-        $endpoint = new endpointman();
-        if(!$endpoint->mac_check_clean($device['plugins']['endpointdevice']['mac_address'])) {
+        if(!$this->mac_check_clean($device['plugins']['endpointdevice']['mac_address'])) {
 		return;
 	}
         $phone_info = array();
@@ -62,7 +61,7 @@ class endpointman {
         $phone_info['brand'] = $key[0];
         $phone_info['family'] = $key[1];
         $phone_info['model'] = $key[2];
-        $phone_info['mac'] = $endpoint->mac_check_clean($device['plugins']['endpointdevice']['mac_address']);
+        $phone_info['mac'] = $this->mac_check_clean($device['plugins']['endpointdevice']['mac_address']);
         $phone_info['line'][1]['line'] = 1;
         $phone_info['line'][1]['ext'] = $device['plugins']['sip']['username'];
         $phone_info['line'][1]['description'] = $device['plugins']['endpointdevice']['display_name'];
@@ -100,7 +99,7 @@ class endpointman {
 	$phone_info['options']['update_server'] = 'http://' . $dns . '/provision/';	// todo: make this match blue.box, not the DNS name?
  
 	$phone_info['timezone'] = "-8";
-	return $endpoint;
+	return $phone_info;
     }
 
     function prepare_configs($phone_info) {
