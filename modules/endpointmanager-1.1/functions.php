@@ -52,7 +52,7 @@ class endpointman {
 	    return;
 	}
         if(!$this->mac_check_clean($device['plugins']['endpointdevice']['mac_address'])) {
-		return;
+	    return;
 	}
         $phone_info = array();
         $dns = $device['User']['Location']['domain'];
@@ -99,6 +99,10 @@ class endpointman {
 	$phone_info['options']['update_server'] = 'http://' . $dns . '/provision/';	// todo: make this match blue.box, not the DNS name?
  
 	$phone_info['timezone'] = "-8";
+
+        $phone_info['directory'] = $phone_info['brand'];
+        $phone_info['cfg_dir'] = $phone_info['family'];
+
 	return $phone_info;
     }
 
@@ -115,26 +119,19 @@ class endpointman {
 
         // Replace all bogus data below with $endpointdevice['XXX'] from plugins field of basemodel
 
-        $model = array('name' => $phone_info['model']);
-        $family = array('name' => $phone_info['family']);
-        $brand = array('name' => $phone_info['brand']);
-
-        $phone_info['directory'] = $phone_info['brand'];
-        $phone_info['cfg_dir'] = $phone_info['family'];
-
-        $class = "endpoint_" . $brand['name'] . "_" . $family['name'] . '_phone';
+        $class = "endpoint_" . $phone_info['brand'] . "_" . $phone_info['family'] . '_phone';
 
         $provisioner_lib = new $class();
 
         //have to because of versions less than php5.3
-        $provisioner_lib->brand_name = $brand['name'];
-        $provisioner_lib->family_line = $family['name'];
+        $provisioner_lib->brand_name = $phone_info['brand'];
+        $provisioner_lib->family_line = $phone_info['family'];
 
         //Mac Address
         $provisioner_lib->mac = $phone_info['mac'];
 
         //Phone Model (Please reference family_data.xml in the family directory for a list of recognized models)
-        $provisioner_lib->model = $model['name'];
+        $provisioner_lib->model = $phone_info["model"];
 
         //Timezone
         $provisioner_lib->timezone = date_offset_get(new DateTime);
