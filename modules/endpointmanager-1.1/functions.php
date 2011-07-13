@@ -106,7 +106,7 @@ class endpointman {
 	return $phone_info;
     }
 
-    function prepare_configs($phone_info) {
+    function build_provisioner_lib($phone_info) {
         //$endpoint = Doctrine::getTable('Endpoint')->findOneByMac($mac_address);
         //if (!$endpoint) {
         //    // TODO: Add code to automatically add a new device here, detecting it's model, family and brand based on it's
@@ -162,7 +162,12 @@ class endpointman {
         $provisioner_lib->root_dir = MODPATH . 'endpointmanager-1.1' . DIRECTORY_SEPARATOR . 'libraries' . DIRECTORY_SEPARATOR;
 
         $provisioner_lib->processor_info = 'Endpoint Manager 1.1 for Blue.Box';
+	return $provisioner_lib;
+    }
 
+    function prepare_configs($phone_info) 
+    {
+	$provisioner_lib=$this->build_provisioner_lib($phone_info);
         //Set Variables according to the template_data files included. We can include different template.xml files within family_data.xml also one can create
         //template_data_custom.xml which will get included or template_data_<model_name>_custom.xml which will also get included
         //line 'global' will set variables that aren't line dependant
