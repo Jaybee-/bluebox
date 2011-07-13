@@ -94,9 +94,13 @@ class MultiTenantRecordListener extends Doctrine_Record_Listener
 
     public function preDqlSelect($event)
     {
-        $q = &$event->getQuery();
 
-        $q->andWhere('account_id = ' .$this->getUserId());
+	$uid=$this->getUserId();
+
+	if (!is_null($uid)) {
+        	$q = &$event->getQuery();
+	        $q->andWhere('account_id = ' .$uid);
+	}
     }
 
     public function preDqlDelete($event)
