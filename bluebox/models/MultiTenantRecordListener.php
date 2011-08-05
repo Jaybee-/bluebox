@@ -96,6 +96,7 @@ class MultiTenantRecordListener extends Doctrine_Record_Listener
 
     public function preDqlSelect($event)
     {
+        $q = &$event->getQuery();
 
 	$uid=$this->getUserId();
 
