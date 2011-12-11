@@ -16,7 +16,7 @@ class SimpleRoute_1_2_Configure extends Bluebox_Configure
         'core' => 0.1,
         'trunkmanager' => 0.1
     );
-    public static $navBranch = '/Connectivity/';
+    public static $navBranch = '/Routing/';
     public static $navURL = 'simpleroute/index';
     public static $navSubmenu = array(
         'Simple Routes' => '/simpleroute/index',
