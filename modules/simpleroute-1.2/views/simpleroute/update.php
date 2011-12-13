@@ -47,6 +47,8 @@
             <?php echo '<a href="#" id="new_simple_route_pattern" class="button add"><span>Add New Pattern</span></a>'; ?>
         </div>
 
+<a href="/numbermanager/create/FeatureCodeNumber" class="qtipAjaxForm"><span>Add New Number</span></a>
+
     <?php echo form::close_section(); ?>
     
     <?php

@@ -82,6 +82,63 @@ class SimpleRoute_Controller extends Bluebox_Controller
         parent::prepareUpdateView($baseModel);
     }
 
+    public function route_editor() {
+	if (array_key_exists("submit",$_REQUEST)) {
+		print "
+<script type=\"text/javascript\" src=\"/assets/js/jquery/jquery-1.4.2.min.js\"></script>
+<script type=\"text/javascript\" src=\"/assets/js/jquery/jquery.helper.js\"></script>
+<script type=\"text/javascript\" src=\"/assets/js/jquery/jquery.jgrowl.js\"></script>
+
+<link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/jquery/jquery.jgrowl.css\" media=\"screen\" />
+
+
+NO CONTENT
+
+<script type=\"text/javascript\">
+//<![CDATA[
+$(document).ready(function () {";
+		if (array_key_exists('confirm',$_REQUEST['submit'])) {
+			$r=json_encode($_REQUEST['route']);
+			if (array_key_exists("magicrownumber",$_REQUEST)) {
+				$rownum=$_REQUEST["magicrownumber"];
+				$action='updated';
+			} else {
+				$rownum="null";
+				$action='added';
+			}
+			print "
+	update_row($rownum,$r);
+	php.success({\"a\":{\"evalScript\":[{\"foo\":\"$.jGrowl('Route $action!', { theme: 'success', life: 5000 });\"}]},\"q\":[]}, true);
+";
+		}
+		print "});\n//]]>\n</script>\n";
+		exit;
+	}
+
+	# magicrownumber=the row in the table we're updating. It's magic because it is changed when rows are shuffled.
+	if (array_key_exists('magicrownumber',$_REQUEST)) {
+		$this->view->magicrownumber=$_REQUEST['magicrownumber'];
+	} else {
+		$this->view->magicrownumber=0;
+	}
+
+	if (array_key_exists('route',$_REQUEST)) {
+		$this->view->route=$_REQUEST['route'];
+	} else {
+		$this->view->route=array('destination'=>5,'trunk'=>1,'dialstring'=>'$1','clid_name'=>'','clid_number'=>'');
+	}
+	$this->view->title="Edit Route";
+	$this->view->trunks=array();
+        foreach (Doctrine::getTable('Trunk')->findAll(Doctrine::HYDRATE_ARRAY) AS $trunk) {
+		$this->view->trunks[$trunk["trunk_id"]]=$trunk["name"];
+        }
+
+	$this->view->destinations=array();
+        foreach (Doctrine::getTable('SimpleRoute')->findAll(Doctrine::HYDRATE_ARRAY) AS $dest) {
+		$this->view->destinations[$dest["simple_route_id"]]=$dest["name"];
+        }
+    }
+
     protected function pre_save(&$object)
     {
         $patterns = $object['patterns'];

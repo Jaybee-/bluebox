@@ -1,142 +1,81 @@
 <style>
-.selected {
-        color:blue;
-	cursor: move;
-}
 td, th{
         border: 1px solid black;
         padding: 5px;
-}
-td.noborder {
-	border: 0px;
-	vertical-align: top;
-}
-.dragme {
-	cursor: move;
 }
 </style>
 
 <?php echo form::open_section('Route Outbound Calls'); ?>
 
-<table width="100%">
-<tr><td class="noborder" width="50%">
 <table id=routelisttable border=1>
-<tr><th>Destination</th><th>Trunk</th><th>Dial String</th><th>CLID Name</th><th>CLID Number</th></tr>
+<tr><th>Destination</th><th>Trunk</th><th>Dial String</th><th>CLID Name</th><th>CLID Number</th><th>Controls</th></tr>
 </table><br>
-Drag and drop to re-order routes
-</td><td class="noborder">
-	<table>
-		<tr><td>Destination</td><td><select id=routeselect><option></option><?php echo $destinationoptions?></select></td></tr>
-		<tr><td>Trunk</td><td><select id=trunkselect><option></option><?php echo $trunkoptions?></select></td></tr>
-		<tr><td>Dialstring</td><td><input id=dialstringselect value='$1'></td></tr>
-		<tr><td>Default Caller-ID Name</td><td><input id=clid_name_select value=''></td></tr>
-		<tr><td>Default Caller-ID Number</td><td><input id=clid_number_select value=''></td></tr>
-		<tr><td colspan=2>
-		<span onclick="update_entry(null);">Add</span> 
-		<span onclick="clearform();">Clear</span> 
-		<span id=selected_route style="display:none">
-			<span onclick="update_entry(editing);">Update</span>
-			<span onclick="erase(editing);">Delete</span> 
-		</span>
-		</td></tr>
-	</table>
-</td></tr></table>
+		<?php echo html::anchor('/numbermanager/create/FeatureCodeNumber','<span>' .__('Test link add featurecode') .'</span>', array('class' => 'qtipAjaxForm')); ?>
+		<?php echo html::anchor('/simpleroute/route_editor/','<span>' .__('Add New Route') .'</span>', array('class' => 'qtipAjaxForm')); ?>
 <script>
-editing=null;
-dragging=null;
-oldclass=null;
-moved=0;
 
 function erase(row) {
-	clearform();
-	row.parentNode.deleteRow(row.rowIndex);
-}
-
-function update_entry(row) {
-	var routesel=document.getElementById("routeselect");
-	var newentry={};
-	newentry["destination"]=document.getElementById("routeselect").value;
-	newentry["trunk"]=document.getElementById("trunkselect").value;
-	newentry["dialstring"]=document.getElementById("dialstringselect").value;
-	newentry["clid_name"]=document.getElementById("clid_name_select").value;
-	newentry["clid_number"]=document.getElementById("clid_number_select").value;
-	if (newentry["destination"]=="") { alert("Please select a destination"); return; }
-	if (newentry["trunk"]=="") { alert("Please select a trunk for the calls to go to"); return; }
-	update_row(row,newentry);
-	renumber_fields();
-	clearform();
-}
-
-function clearform() {
-	if (editing!=null) {
-		editing.className=oldclass;
+	while (!(row instanceof HTMLTableRowElement)) {
+		row=row.parentNode;
 	}
-	editing=null;
-	document.getElementById("routeselect").selectedIndex=0;
-	document.getElementById("trunkselect").selectedIndex=0;
-	document.getElementById("dialstringselect").value='$1';
-	document.getElementById("clid_name_select").value='';
-	document.getElementById("clid_number_select").value='';
-	document.getElementById("selected_route").style.display="none";
+	row.parentNode.deleteRow(row.rowIndex);
+	renumber_fields();
 }
+
+// Row is row to move. up=true to move up, false to move down.
+function moverow(row,up) {
+	while (!(row instanceof HTMLTableRowElement)) {
+		row=row.parentNode;
+	}
+	table=row.parentNode;
+	if (up) {
+		goingup=row;
+		goingdown=table.rows.item(row.rowIndex-1);
+		row=goingdown;
+	} else {
+		goingdown=row;
+		goingup=table.rows.item(row.rowIndex+1);
+		row=goingup;
+	}
+	if (goingdown.rowIndex>0) {
+		row.style.visibility="hidden";
+		setTimeout(function() {row.style.visibility="visible"},500);
+		setTimeout(function() {table.insertBefore(goingup,goingdown)},250);
+	}
+}
+
+
 
 function update_row(row,rowdata) {
 	var rlt=document.getElementById("routelisttable");
 	var doinsertlater;
-	if (row==null) {
+	if ((row==null) || (row==0)) {
 		row=document.createElement("tr");
 		doinsertlater=1;
 	} else {
 		doinsertlater=0;
+		row=document.getElementById("routelisttable").getElementsByTagName("tr")[row+1];
 	}
 	row.innerHTML="";
-	row.className="dragme";
-	row.onmousedown=function () {
-		if (editing!=null) {
-			editing.className=oldclass;
-		}
-		dragging=row;
-		oldclass=dragging.className;
-		dragging.className="selected";
-		moved=0;
-		return false;
-	}
 
-	row.onmousemove=function () {
-		if ((dragging==row) || (dragging==null)) {
-			return;
-		}
-		document.getElementById("selected_route").style.display="none";
-		moved=1;
-                if (dragging.rowIndex > row.rowIndex) {
-                        row.parentNode.insertBefore(dragging,row);
-                } else {
-                        row.parentNode.insertBefore(dragging,row);
-                        row.parentNode.insertBefore(row,dragging);
-                }
-		return false;
-	}
-
-	row.onclick=function () {
-		if (moved>0) {
-			return;
-		}
-		editing=row;
-		oldclass=editing.className;
-	    	editing.className="selected";
-		document.getElementById("selected_route").style.display="inline";
-		var inputs=row.getElementsByTagName("input");
-		document.getElementById("routeselect").value=inputs[0].value;
-		document.getElementById("trunkselect").value=inputs[1].value;
-		document.getElementById("dialstringselect").value=inputs[2].value;
-		document.getElementById("clid_name_select").value=inputs[3].value;
-		document.getElementById("clid_number_select").value=inputs[4].value;
-	}
 	setcell(row,0,"destination",rowdata["destination"],destinations);
 	setcell(row,1,"trunk",rowdata["trunk"],trunks);
 	setcell(row,2,"dialstring",rowdata["dialstring"]);
 	setcell(row,3,"clid_name",rowdata["clid_name"]);
 	setcell(row,4,"clid_number",rowdata["clid_number"]);
+	args="magicrownumber=0";
+	for (var i in rowdata) {
+		args=args+"&route["+i+"]="+escape(rowdata[i]);
+	}
+	var cell=row.cells[5];
+	if (!cell) {
+		cell=document.createElement("td");
+		row.appendChild(cell);
+	}
+	html="<span onclick='moverow(this,true);'><a href=#>Up</a></span> <span onclick='moverow(this,false);'><a href=#>Down</a></span> ";
+	html=html+'<?php echo html::anchor('/simpleroute/route_editor/?%%%','<span><img src=edit.png>' .__('Edit') .'</span>', array('class' => 'qtipAjaxForm')); ?>';
+	html=html+" <span onclick='erase(this);'><a href=#>Delete</a></span> ";
+	cell.innerHTML=html.replace("%%%",args);
 
 	if (doinsertlater==1) {
 		rlt.appendChild(row);
@@ -170,13 +109,19 @@ function renumber_fields () {
 			n.substr(n.indexOf(']'));
 		inputs[input].name=n;
 	}
+	inputs=document.getElementById("routelisttable").getElementsByTagName("a");
+	for (var input=0; input<inputs.length; input++) {
+		var href=inputs[input].href;
+		href=href.split("magicrownumber=");
+		if (href.length>1) {
+			href[1]=href[1].split("&");
+			href[1][0]=(inputs[input].parentNode.parentNode.rowIndex).toString();
+			href[1]=href[1].join("&");
+			href=href.join("magicrownumber=");
+			inputs[input].href=href;
+		}
+	}
 }
-
-document.onmouseup = function () {
-	dragging.className=oldclass;
-	dragging=null;
-}
-
 
 var routes=<?php print json_encode($routes); ?>;
 var destinations=<?php print json_encode($destinations); ?>;
