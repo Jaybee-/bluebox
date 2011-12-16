@@ -30,11 +30,13 @@ class SimpleRoute_Plugin extends Bluebox_Plugin
     {
         parent::loadFormData();
 
-        $this->pluginData['contexts'] = array();
+	if (array_key_exists('contexts',$this->pluginData)) {
+		unset($this->pluginData['contexts']);
+	}
 
-        if (!empty($_POST['simpleroute']['contexts']))
+        if (!empty($_POST['simpleroute']))
         {
-            $this->pluginData['contexts'] = $_POST['simpleroute']['contexts'];
+            $this->pluginData = $_POST['simpleroute'];
         }
 
         return TRUE;

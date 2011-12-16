@@ -4,7 +4,6 @@
 	cursor: move;
 }
 td, th{
-        border: 1px solid black;
         padding: 5px;
 }
 td.noborder {
@@ -17,39 +16,74 @@ td.noborder {
 </style>
 
 <?php echo form::open_section('Route Outbound Calls'); ?>
+<span style="float: right"><button class="small_green_button button" onclick="popover(null); return false;">New Route</button></span>
 
-<table width="100%">
-<tr><td class="noborder" width="50%">
 <table id=routelisttable border=1>
-<tr><th>Destination</th><th>Trunk</th><th>Dial String</th><th>CLID Name</th><th>CLID Number</th></tr>
+	<tr><th>Destination</th><th>Trunk</th><th>Dial String</th><th>CLID Name</th><th>CLID Number</th></tr>
 </table><br>
 Drag and drop to re-order routes
-</td><td class="noborder">
-	<table>
+<div id="edit_route" style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; display: none;">
+<div style="position: absolute; top: 0%; left: 0%; background-color: gray; display: table-cell; vertical-align: middle; opacity:0.8; filter:alpha(opacity=80); width:100%; height:100%"></div>
+<div style="position: relative; top: 50%; left: 50%; width: 49%; height: 49%;">
+<div style="position: relative; top: -10em; left: -15em; width: 30em; height: 18em; border: 3px blue solid; background-color: white; padding: 10px;">
+	<table style="width: 100%; height: 100%; ">
 		<tr><td>Destination</td><td><select id=routeselect><option></option><?php echo $destinationoptions?></select></td></tr>
 		<tr><td>Trunk</td><td><select id=trunkselect><option></option><?php echo $trunkoptions?></select></td></tr>
 		<tr><td>Dialstring</td><td><input id=dialstringselect value='$1'></td></tr>
 		<tr><td>Default Caller-ID Name</td><td><input id=clid_name_select value=''></td></tr>
 		<tr><td>Default Caller-ID Number</td><td><input id=clid_number_select value=''></td></tr>
 		<tr><td colspan=2>
-		<span onclick="update_entry(null);">Add</span> 
-		<span onclick="clearform();">Clear</span> 
-		<span id=selected_route style="display:none">
-			<span onclick="update_entry(editing);">Update</span>
-			<span onclick="erase(editing);">Delete</span> 
+		<span style="float: right">&nbsp;<button class="small_red_button button" onclick="document.getElementById('edit_route').style.display='none'; return false;" >Cancel</button></span>
+		<span id="buttons_for_edit">
+			<span style="float: right">&nbsp;<button class="small_red_button button" onclick="return erase(editing);">Delete</button></span>
+			<span style="float: right">&nbsp;<button class="small_green_button button" onclick="return update_entry(editing);">Update</button></span>
+		</span>
+		<span id="buttons_for_add">
+			<span style="float: right">&nbsp;<button class="small_green_button button" onclick="return update_entry(null);">Add</button></span>
 		</span>
 		</td></tr>
 	</table>
-</td></tr></table>
+</div>
+</div>
+</div>
 <script>
 editing=null;
 dragging=null;
 oldclass=null;
 moved=0;
 
+function popover(row) {
+	var edit;
+	var add;
+	if (row===null) {
+		edit="none";
+		add="inline";
+		document.getElementById("routeselect").value="";
+		document.getElementById("trunkselect").value="";
+		document.getElementById("dialstringselect").value='$1';
+		document.getElementById("clid_name_select").value='';
+		document.getElementById("clid_number_select").value='';
+	} else {
+		add="none";
+		edit="inline";
+		var inputs=row.getElementsByTagName("input");
+		document.getElementById("routeselect").value=inputs[0].value;
+		document.getElementById("trunkselect").value=inputs[1].value;
+		document.getElementById("dialstringselect").value=inputs[2].value;
+		document.getElementById("clid_name_select").value=inputs[3].value;
+		document.getElementById("clid_number_select").value=inputs[4].value;
+	}
+	document.getElementById('edit_route').style.display='block'; 
+	document.getElementById('buttons_for_edit').style.display=edit; 
+	document.getElementById('buttons_for_add').style.display=add;
+	editing=row;
+	return false;
+}
+
 function erase(row) {
-	clearform();
+	document.getElementById('edit_route').style.display='none';
 	row.parentNode.deleteRow(row.rowIndex);
+	return false;
 }
 
 function update_entry(row) {
@@ -60,24 +94,12 @@ function update_entry(row) {
 	newentry["dialstring"]=document.getElementById("dialstringselect").value;
 	newentry["clid_name"]=document.getElementById("clid_name_select").value;
 	newentry["clid_number"]=document.getElementById("clid_number_select").value;
-	if (newentry["destination"]=="") { alert("Please select a destination"); return; }
-	if (newentry["trunk"]=="") { alert("Please select a trunk for the calls to go to"); return; }
+	if (newentry["destination"]=="") { alert("Please select a destination"); return false; }
+	if (newentry["trunk"]=="") { alert("Please select a trunk for the calls to go to"); return false; }
 	update_row(row,newentry);
 	renumber_fields();
-	clearform();
-}
-
-function clearform() {
-	if (editing!=null) {
-		editing.className=oldclass;
-	}
-	editing=null;
-	document.getElementById("routeselect").selectedIndex=0;
-	document.getElementById("trunkselect").selectedIndex=0;
-	document.getElementById("dialstringselect").value='$1';
-	document.getElementById("clid_name_select").value='';
-	document.getElementById("clid_number_select").value='';
-	document.getElementById("selected_route").style.display="none";
+	document.getElementById('edit_route').style.display='none';
+	return false;
 }
 
 function update_row(row,rowdata) {
@@ -106,7 +128,6 @@ function update_row(row,rowdata) {
 		if ((dragging==row) || (dragging==null)) {
 			return;
 		}
-		document.getElementById("selected_route").style.display="none";
 		moved=1;
                 if (dragging.rowIndex > row.rowIndex) {
                         row.parentNode.insertBefore(dragging,row);
@@ -118,19 +139,9 @@ function update_row(row,rowdata) {
 	}
 
 	row.onclick=function () {
-		if (moved>0) {
-			return;
+		if (moved==0) {
+			popover(row);
 		}
-		editing=row;
-		oldclass=editing.className;
-	    	editing.className="selected";
-		document.getElementById("selected_route").style.display="inline";
-		var inputs=row.getElementsByTagName("input");
-		document.getElementById("routeselect").value=inputs[0].value;
-		document.getElementById("trunkselect").value=inputs[1].value;
-		document.getElementById("dialstringselect").value=inputs[2].value;
-		document.getElementById("clid_name_select").value=inputs[3].value;
-		document.getElementById("clid_number_select").value=inputs[4].value;
 	}
 	setcell(row,0,"destination",rowdata["destination"],destinations);
 	setcell(row,1,"trunk",rowdata["trunk"],trunks);

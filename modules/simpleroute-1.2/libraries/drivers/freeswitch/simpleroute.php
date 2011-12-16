@@ -64,15 +64,13 @@ class FreeSwitch_SimpleRoute_Driver extends FreeSwitch_Base_Driver
         }
 
         $simpleroute = $base['plugins']['simpleroute'];
+	$routenumber==0;
 
-        foreach ($simpleroute['patterns'] as $index => $options)
-        {
-            foreach ($simpleroute['contexts'] as $context_id => $enabled)
-            {
-                $xml = FreeSwitch::createExtension('trunk_' .$base['trunk_id'] .'_pattern_' .$index, 'main', 'context_' .$context_id);
-
-                $xml->deleteNode();
-            }
+	$xml = FreeSwitch::createExtension("route_$routenumber",'main','context_'. $base->context_id);
+	while ($xml!==FALSE) {
+		$xml->deleteNode();
+		$routenumber++;
+		$xml = FreeSwitch::createExtension("route_$routenumber",'main','context_'. $base->context_id,array("existing"));
         }
     }
 }
